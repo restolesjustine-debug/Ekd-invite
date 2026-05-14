@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Special Invitation</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    background: #1a1008;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Lato', sans-serif;
+    overflow: hidden;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(139,90,43,0.18) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(180,140,80,0.12) 0%, transparent 50%),
+      radial-gradient(ellipse at 60% 80%, rgba(100,60,20,0.2) 0%, transparent 55%);
+    pointer-events: none;
+  }
+
+  .particles {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: rgba(210,170,90,0.4);
+    border-radius: 50%;
+    animation: float linear infinite;
+  }
+
+  @keyframes float {
+    0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 0.5; }
+    100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+  }
+
+  .scene {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  /* ── ENVELOPE ── */
+  .envelope-wrap {
+    position: relative;
+    width: 340px;
+    cursor: pointer;
+    animation: entranceDrop 1s cubic-bezier(.22,.68,0,1.2) both;
+    animation-delay: 0.4s;
+  }
+
+  @keyframes entranceDrop {
+    from { opacity: 0; transform: translateY(-60px) scale(0.85); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .envelope-hint {
+    text-align: center;
+    color: rgba(210,170,90,0.7);
+    font-size: 12px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+    animation: pulse 2s ease-in-out infinite;
+    animation-delay: 1.6s;
+    opacity: 0;
+    animation-fill-mode: forwards;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  .envelope {
+    position: relative;
+    width: 340px;
+    height: 230px;
+    filter: drop-shadow(0 20px 60px rgba(0,0,0,0.7));
+    transition: transform 0.3s ease, filter 0.3s ease;
+  }
+
+  .envelope:hover {
+    transform: translateY(-4px) scale(1.02);
+    filter: drop-shadow(0 28px 70px rgba(0,0,0,0.8));
+  }
+
+  .env-body {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(160deg, #d4a855 0%, #b8893a 40%, #c9a048 100%);
+    border-radius: 6px;
+    border: 1px solid rgba(255,220,140,0.3);
+  }
+
+  .env-body::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 8px,
+      rgba(0,0,0,0.03) 8px,
+      rgba(0,0,0,0.03) 9px
+    );
+    border-radius: 6px;
+  }
+
+  .env-bottom-left {
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 0; height: 0;
+    border-style: solid;
+    border-width: 0 0 115px 170px;
+    border-color: transparent transparent #b07c2e transparent;
+  }
+
+  .env-bottom-right {
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 0; height: 0;
+    border-style: solid;
+    border-width: 0 170px 115px 0;
+    border-color: transparent #b07c2e transparent transparent;
+  }
+
+  .env-flap {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 120px 170px 0 170px;
+    border-color: #c9a048 transparent transparent transparent;
+    transform-origin: top center;
+    transition: transform 0.8s cubic-bezier(.4,0,.2,1);
+    z-index: 10;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+  }
+
+  .env-flap.open {
+    transform: rotateX(180deg);
+  }
+
+  .env-seal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    background: radial-gradient(circle, #8b1a1a, #6b0f0f);
+    border-radius: 50%;
+    border: 2px solid rgba(255,200,150,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    z-index: 11;
+    transition: opacity 0.3s, transform 0.3s;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  }
+
+  .env-seal.hidden { opacity: 0; transform: translate(-50%, -50%) scale(0); }
+
+  .env-letter-peek {
+    position: absolute;
+    bottom: 10px;
+    left: 20px; right: 20px;
+    height: 120px;
+    background: #fdf8f0;
+    border-radius: 4px 4px 0 0;
+    transform: translateY(100%);
+    transition: transform 0.6s cubic-bezier(.4,0,.2,1);
+    transition-delay: 0.4s;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .env-letter-peek.rise {
+    transform: translateY(20%);
+  }
+
+  .env-letter-peek span {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: rgba(100,70,30,0.5);
+    letter-spacing: 1px;
+  }
+
+  /* ── FULL LETTER ── */
+  .letter-scene {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+    padding: 20px;
+  }
+
+  .letter-scene.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .letter-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(10,6,2,0.88);
+    backdrop-filter: blur(6px);
+  }
+
+  .letter-paper {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 500px;
+    background: #fdf8f0;
+    border-radius: 3px;
+    padding: 50px 52px 40px;
+    transform: translateY(40px) scale(0.95);
+    transition: transform 0.6s cubic-bezier(.22,.68,0,1.2), opacity 0.5s;
+    opacity: 0;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(180,140,60,0.15);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .letter-paper::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      transparent,
+      transparent 31px,
+      rgba(180,150,90,0.12) 31px,
+      rgba(180,150,90,0.12) 32px
+    );
+    border-radius: 3px;
+    pointer-events: none;
+  }
+
+  .letter-scene.visible .letter-paper {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    transition-delay: 0.15s;
+  }
+
+  .letter-corner {
+    position: absolute;
+    top: 18px; right: 20px;
+    font-family: 'Lato', sans-serif;
+    font-size: 11px;
+    color: rgba(140,100,50,0.5);
+    letter-spacing: 1px;
+  }
+
+  .letter-greeting {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    font-style: italic;
+    color: #7a5020;
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+
+  .letter-body {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    color: #3d2a10;
+    line-height: 1.85;
+    margin-bottom: 28px;
+  }
+
+  .letter-body p { margin-bottom: 16px; }
+  .letter-body p:last-child { margin-bottom: 0; }
+
+  .letter-closing {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    color: #7a5020;
+    font-style: italic;
+    margin-bottom: 6px;
+  }
+
+  .letter-sig {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: #5a3810;
+    font-style: italic;
+  }
+
+  .letter-divider {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(180,140,60,0.5), transparent);
+    margin: 24px auto;
+  }
+
+  /* ── BUTTONS ── */
+  .button-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 28px;
+    animation: fadeUp 0.6s ease both;
+    animation-delay: 0.5s;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .btn-yes {
+    padding: 14px 38px;
+    background: linear-gradient(135deg, #2d7a3a, #1f5e2a);
+    color: #e8f5e9;
+    border: none;
+    border-radius: 4px;
+    font-family: 'Lato', sans-serif;
+    font-size: 17px;
+    font-weight: 400;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 6px 20px rgba(30,90,40,0.4);
+  }
+
+  .btn-yes:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 10px 28px rgba(30,90,40,0.55);
+    background: linear-gradient(135deg, #358a43, #256633);
+  }
+
+  .btn-yes:active { transform: scale(0.97); }
+
+  .btn-no {
+    padding: 10px 22px;
+    background: transparent;
+    color: rgba(100,70,40,0.6);
+    border: 1px solid rgba(140,100,50,0.3);
+    border-radius: 4px;
+    font-family: 'Lato', sans-serif;
+    font-size: 13px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+
+  .btn-no:hover {
+    color: rgba(160,60,40,0.8);
+    border-color: rgba(160,60,40,0.4);
+    background: rgba(160,60,40,0.05);
+  }
+
+  /* ── RESPONSE SCREENS ── */
+  .response-scene {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+    padding: 20px;
+  }
+
+  .response-scene.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .response-bg-yes {
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse at center, #0d2b14 0%, #060f08 100%);
+  }
+
+  .response-bg-no {
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse at center, #1a100a 0%, #0a0604 100%);
+  }
+
+  .response-card {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 460px;
+    text-align: center;
+    padding: 52px 44px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.6s cubic-bezier(.22,.68,0,1.2), opacity 0.5s;
+    opacity: 0;
+    backdrop-filter: blur(10px);
+  }
+
+  .response-scene.visible .response-card {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    transition-delay: 0.1s;
+  }
+
+  .response-icon {
+    font-size: 52px;
+    margin-bottom: 20px;
+    display: block;
+    animation: iconBounce 0.8s cubic-bezier(.22,.68,0,1.4) both;
+    animation-delay: 0.3s;
+  }
+
+  @keyframes iconBounce {
+    from { transform: scale(0) rotate(-15deg); opacity: 0; }
+    to   { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+
+  .response-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 300;
+    color: #e8d8b0;
+    margin-bottom: 16px;
+    line-height: 1.3;
+  }
+
+  .response-body {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    font-style: italic;
+    color: rgba(220,200,160,0.75);
+    line-height: 1.8;
+    margin-bottom: 0;
+  }
+
+  /* NO reason box */
+  .reason-box {
+    margin-top: 28px;
+    text-align: left;
+  }
+
+  .reason-label {
+    font-family: 'Lato', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(220,180,120,0.5);
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .reason-input {
+    width: 100%;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 4px;
+    padding: 12px 16px;
+    color: #e8d8b0;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    font-style: italic;
+    outline: none;
+    resize: none;
+    transition: border-color 0.2s;
+    min-height: 80px;
+  }
+
+  .reason-input::placeholder { color: rgba(200,170,110,0.35); }
+  .reason-input:focus { border-color: rgba(210,170,90,0.4); }
+
+  .send-btn {
+    margin-top: 14px;
+    padding: 11px 28px;
+    background: rgba(210,140,50,0.15);
+    border: 1px solid rgba(210,170,90,0.3);
+    border-radius: 4px;
+    color: rgba(220,190,130,0.85);
+    font-family: 'Lato', sans-serif;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.25s;
+    width: 100%;
+  }
+
+  .send-btn:hover {
+    background: rgba(210,140,50,0.25);
+    border-color: rgba(210,170,90,0.5);
+  }
+
+  .send-status {
+    font-size: 12px;
+    font-family: 'Lato', sans-serif;
+    margin-top: 10px;
+    letter-spacing: 1px;
+    min-height: 20px;
+    text-align: center;
+  }
+
+  .send-status.ok { color: rgba(100,200,120,0.8); }
+  .send-status.err { color: rgba(220,100,80,0.8); }
+
+  /* confetti */
+  .confetti-piece {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    animation: confettiFall linear forwards;
+    pointer-events: none;
+    z-index: 300;
+  }
+
+  @keyframes confettiFall {
+    0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* scrollbar for letter */
+  .letter-paper::-webkit-scrollbar { width: 4px; }
+  .letter-paper::-webkit-scrollbar-track { background: transparent; }
+  .letter-paper::-webkit-scrollbar-thumb { background: rgba(180,140,60,0.3); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- Floating particles -->
+<div class="particles" id="particles"></div>
+
+<!-- ENVELOPE SCENE -->
+<div class="scene" id="envelopeScene">
+  <div class="envelope-wrap" id="envelopeWrap" onclick="openEnvelope()">
+    <div class="envelope-hint" id="hint">tap to open</div>
+    <div class="envelope" id="envelope">
+      <div class="env-body"></div>
+      <div class="env-bottom-left"></div>
+      <div class="env-bottom-right"></div>
+      <div class="env-letter-peek" id="letterPeek">
+        <span>for you ✦</span>
+      </div>
+      <div class="env-flap" id="envFlap"></div>
+      <div class="env-seal" id="envSeal">✦</div>
+    </div>
+  </div>
+</div>
+
+<!-- LETTER SCENE -->
+<div class="letter-scene" id="letterScene">
+  <div class="letter-bg" onclick=""></div>
+  <div class="letter-paper" id="letterPaper">
+    <div class="letter-corner">May 16, 2026</div>
+    <div class="letter-greeting">My Dearest Sister,</div>
+    <div class="letter-body">
+      <p>
+        Grace and peace be upon you. I write to you with a humble heart and an
+        expectant spirit, trusting that the Lord has already ordered the steps of this day.
+      </p>
+      <p>
+        I would be deeply honoured if you would allow me the privilege of accompanying
+        you on my very first <strong style="font-weight:600; color:#5a3810;">EKD — Encourage Kingdom Date</strong> —
+        this coming <strong style="font-weight:600; color:#5a3810;">Saturday, May 16, 2026.</strong>
+      </p>
+      <p>
+        My desire is simply to spend time in purposeful, God-honouring fellowship —
+        to encourage one another in faith, to share a meal, to laugh, and to reflect
+        on the goodness of the Lord together. Nothing more, nothing less.
+      </p>
+      <p>
+        I believe iron sharpens iron, and I believe He placed you in my path for a reason.
+        It would mean the world to me if you said yes.
+      </p>
+    </div>
+    <div class="letter-divider"></div>
+    <div class="letter-closing">With sincerity and warmth,</div>
+    <div class="letter-sig">Justine / Astin ✦</div>
+
+    <div class="button-row" id="buttonRow">
+      <button class="btn-yes" onclick="respond('yes')">Yes, I will come ✦</button>
+      <button class="btn-no" onclick="respond('no')">Not this time</button>
+    </div>
+  </div>
+</div>
+
+<!-- YES RESPONSE -->
+<div class="response-scene" id="yesScene">
+  <div class="response-bg-yes"></div>
+  <div class="response-card">
+    <span class="response-icon">🌿</span>
+    <div class="response-title">He has made your paths straight.</div>
+    <div class="response-body">
+      Thank you, dear sister, for your willingness and open heart. Your yes is
+      not just a gift to me — it is a reflection of the beautiful spirit God has
+      placed within you. I am truly grateful. May our time together glorify Him
+      in every moment. See you Saturday! 🕊️
+    </div>
+    <div class="send-status" id="yesSendStatus"></div>
+  </div>
+</div>
+
+<!-- NO RESPONSE -->
+<div class="response-scene" id="noScene">
+  <div class="response-bg-no"></div>
+  <div class="response-card">
+    <span class="response-icon">🤍</span>
+    <div class="response-title">It is well with my soul.</div>
+    <div class="response-body">
+      That is completely okay, dear sister. I hold no sadness —
+      only gratitude that you took the time to read these words.
+      The Lord's timing is always perfect, and I trust that
+      He has something beautiful in store for you this Saturday.
+      You are seen, valued, and appreciated. 💛
+    </div>
+    <div class="reason-box">
+      <span class="reason-label">May I ask why?</span>
+      <textarea class="reason-input" id="reasonInput" placeholder="Feel free to share, or leave this blank…" rows="3"></textarea>
+      <button class="send-btn" onclick="sendNo()">Send my response</button>
+      <div class="send-status" id="noSendStatus"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── EmailJS config ──────────────────────────────────────────────
+  // SETUP INSTRUCTIONS:
+  // 1. Go to https://www.emailjs.com and create a free account
+  // 2. Add an Email Service (Gmail recommended) → copy the Service ID
+  // 3. Create an Email Template with these variables:
+  //    {{to_email}}, {{subject}}, {{message}}
+  //    Copy the Template ID
+  // 4. Go to Account → copy your Public Key
+  // 5. Replace the three values below:
+  const EMAILJS_PUBLIC_KEY  = 'cdrNUiCrrbESkMUu0';
+  const EMAILJS_SERVICE_ID  = 'service_nyr56rc';
+  const EMAILJS_TEMPLATE_ID = 'template_rzyxupb';
+  const YOUR_EMAIL          = 'restolesjustine@gmail.com';
+
+  emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
+  // ── Particles ───────────────────────────────────────────────────
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 22; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.cssText = `
+      left: ${Math.random() * 100}%;
+      width: ${2 + Math.random() * 3}px;
+      height: ${2 + Math.random() * 3}px;
+      animation-duration: ${8 + Math.random() * 14}s;
+      animation-delay: ${Math.random() * 12}s;
+      opacity: ${0.2 + Math.random() * 0.5};
+    `;
+    container.appendChild(p);
+  }
+
+  // ── Envelope open ───────────────────────────────────────────────
+  let opened = false;
+  function openEnvelope() {
+    if (opened) return;
+    opened = true;
+
+    document.getElementById('envelopeWrap').style.cursor = 'default';
+    document.getElementById('envelopeWrap').onclick = null;
+    document.getElementById('envSeal').classList.add('hidden');
+    document.getElementById('hint').style.animationPlayState = 'paused';
+    document.getElementById('hint').style.opacity = '0';
+
+    // Open flap
+    setTimeout(() => {
+      document.getElementById('envFlap').classList.add('open');
+    }, 100);
+
+    // Rise letter peek
+    setTimeout(() => {
+      document.getElementById('letterPeek').classList.add('rise');
+    }, 700);
+
+    // Show full letter
+    setTimeout(() => {
+      document.getElementById('letterScene').classList.add('visible');
+    }, 1400);
+  }
+
+  // ── Response handler ────────────────────────────────────────────
+  function respond(choice) {
+    document.getElementById('letterScene').classList.remove('visible');
+
+    if (choice === 'yes') {
+      setTimeout(() => {
+        document.getElementById('yesScene').classList.add('visible');
+        launchConfetti();
+        sendYes();
+      }, 400);
+    } else {
+      setTimeout(() => {
+        document.getElementById('noScene').classList.add('visible');
+      }, 400);
+    }
+  }
+
+  // ── Confetti ────────────────────────────────────────────────────
+  function launchConfetti() {
+    const colors = ['#f9c74f','#90be6d','#43aa8b','#f8961e','#f94144','#577590'];
+    for (let i = 0; i < 80; i++) {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.cssText = `
+        left: ${10 + Math.random() * 80}%;
+        background: ${colors[Math.floor(Math.random() * colors.length)]};
+        animation-duration: ${1.5 + Math.random() * 2.5}s;
+        animation-delay: ${Math.random() * 0.8}s;
+        border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+        width: ${6 + Math.random() * 7}px;
+        height: ${6 + Math.random() * 7}px;
+      `;
+      document.body.appendChild(el);
+      el.addEventListener('animationend', () => el.remove());
+    }
+  }
+
+  // ── Send YES email ───────────────────────────────────────────────
+  function sendYes() {
+    const statusEl = document.getElementById('yesSendStatus');
+    statusEl.textContent = 'Sending...';
+    statusEl.className = 'send-status';
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_name:   'Justine',
+      from_name: 'EKD Invitation',
+      to_email:  YOUR_EMAIL,
+      reply_to:  YOUR_EMAIL,
+      subject:   'EKD Invitation - She Said YES!',
+      message:   'Great news Justine! Your sister accepted your EKD invitation for Saturday May 16 2026. She said YES! Praise God - may your time together be glorifying and full of joy.'
+    }).then(function(res) {
+      console.log('EmailJS success:', res);
+      statusEl.textContent = '✓ Email sent to your Gmail!';
+      statusEl.className = 'send-status ok';
+    }, function(err) {
+      console.error('EmailJS failed:', JSON.stringify(err));
+      statusEl.textContent = 'Error: ' + (err.text || JSON.stringify(err));
+      statusEl.className = 'send-status err';
+    });
+  }
+
+  // ── Send NO email ────────────────────────────────────────────────
+  function sendNo() {
+    const reason   = document.getElementById('reasonInput').value.trim();
+    const statusEl = document.getElementById('noSendStatus');
+    const btn      = document.querySelector('.send-btn');
+
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+
+    const message = reason
+      ? 'Your sister declined the EKD invitation for Saturday May 16 2026. Her reason: ' + reason
+      : 'Your sister declined the EKD invitation for Saturday May 16 2026. She did not leave a reason.';
+
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_name:   'Justine',
+      from_name: 'EKD Invitation',
+      to_email:  YOUR_EMAIL,
+      reply_to:  YOUR_EMAIL,
+      subject:   'EKD Invitation - She Said Not This Time',
+      message:   message
+    }).then(function(res) {
+      console.log('EmailJS success:', res);
+      statusEl.textContent = '✓ Response sent to your Gmail!';
+      statusEl.className = 'send-status ok';
+      btn.textContent = 'Sent ✓';
+    }, function(err) {
+      console.error('EmailJS failed:', JSON.stringify(err));
+      statusEl.textContent = 'Error: ' + (err.text || JSON.stringify(err));
+      statusEl.className = 'send-status err';
+      btn.disabled = false;
+      btn.textContent = 'Try again';
+    });
+  }
+</script>
+</body>
+</html>
