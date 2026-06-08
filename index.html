@@ -63,7 +63,6 @@
     height: 100vh;
   }
 
-  /* ── ENVELOPE ── */
   .envelope-wrap {
     position: relative;
     width: 340px;
@@ -214,7 +213,6 @@
     letter-spacing: 1px;
   }
 
-  /* ── FULL LETTER ── */
   .letter-scene {
     position: fixed;
     inset: 0;
@@ -328,7 +326,6 @@
     margin: 24px auto;
   }
 
-  /* ── BUTTONS ── */
   .button-row {
     display: flex;
     align-items: center;
@@ -386,7 +383,6 @@
     background: rgba(160,60,40,0.05);
   }
 
-  /* ── RESPONSE SCREENS ── */
   .response-scene {
     position: fixed;
     inset: 0;
@@ -468,7 +464,6 @@
     margin-bottom: 0;
   }
 
-  /* NO reason box */
   .reason-box {
     margin-top: 28px;
     text-align: left;
@@ -536,7 +531,6 @@
   .send-status.ok { color: rgba(100,200,120,0.8); }
   .send-status.err { color: rgba(220,100,80,0.8); }
 
-  /* confetti */
   .confetti-piece {
     position: fixed;
     width: 8px;
@@ -552,7 +546,6 @@
     100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
   }
 
-  /* scrollbar for letter */
   .letter-paper::-webkit-scrollbar { width: 4px; }
   .letter-paper::-webkit-scrollbar-track { background: transparent; }
   .letter-paper::-webkit-scrollbar-thumb { background: rgba(180,140,60,0.3); border-radius: 2px; }
@@ -560,10 +553,8 @@
 </head>
 <body>
 
-<!-- Floating particles -->
 <div class="particles" id="particles"></div>
 
-<!-- ENVELOPE SCENE -->
 <div class="scene" id="envelopeScene">
   <div class="envelope-wrap" id="envelopeWrap" onclick="openEnvelope()">
     <div class="envelope-hint" id="hint">tap to open</div>
@@ -580,26 +571,21 @@
   </div>
 </div>
 
-<!-- LETTER SCENE -->
 <div class="letter-scene" id="letterScene">
-  <div class="letter-bg" onclick=""></div>
+  <div class="letter-bg"></div>
   <div class="letter-paper" id="letterPaper">
-    <div class="letter-corner">May 31, 2026</div>
+    <div class="letter-corner" id="letterDate"></div>
     <div class="letter-greeting">My Dearest Sister,</div>
     <div class="letter-body">
       <p>
         Grace and peace be upon you. I write to you with a humble heart and an
         expectant spirit, trusting that the Lord has already ordered the steps of this day.
       </p>
-      <p>
-        I would be deeply honoured if you would allow me the privilege of accompanying
-        you on <strong style="font-weight:600; color:#5a3810;">EKD — Encourage Kingdom Date</strong> —
-        this coming <strong style="font-weight:600; color:#5a3810;">Sunday, May 31, 2026.</strong>
-      </p>
+      <p id="letterInviteLine"></p>
       <p>
         My desire is but simple and sincere: to spend with thee an evening of wholesome and God-honouring
-       fellowship —to break bread together, to speak of faith and life, to share glad laughter, and to reflect
-       upon the goodness and mercy of our gracious Lord.
+        fellowship — to break bread together, to speak of faith and life, to share glad laughter, and to reflect
+        upon the goodness and mercy of our gracious Lord.
       </p>
       <p>
         I believe iron sharpens iron, and I believe He placed you in my path for a reason.
@@ -608,7 +594,7 @@
     </div>
     <div class="letter-divider"></div>
     <div class="letter-closing">With sincerity and warmth,</div>
-    <div class="letter-sig">Justine / Astin ✦ From West</div>
+    <div class="letter-sig" id="letterSig"></div>
 
     <div class="button-row" id="buttonRow">
       <button class="btn-yes" onclick="respond('yes')">Yes, I will come ✦</button>
@@ -617,23 +603,16 @@
   </div>
 </div>
 
-<!-- YES RESPONSE -->
 <div class="response-scene" id="yesScene">
   <div class="response-bg-yes"></div>
   <div class="response-card">
     <span class="response-icon">🌿</span>
     <div class="response-title">He has made your paths straight.</div>
-    <div class="response-body">
-      Thank you, dear sister, for your willingness and open heart. Your yes is
-      not just a gift to me — it is a reflection of the beautiful spirit God has
-      placed within you. I am truly grateful. May our time together glorify Him
-      in every moment. See you! 🕊️
-    </div>
+    <div class="response-body" id="yesBody"></div>
     <div class="send-status" id="yesSendStatus"></div>
   </div>
 </div>
 
-<!-- NO RESPONSE -->
 <div class="response-scene" id="noScene">
   <div class="response-bg-no"></div>
   <div class="response-card">
@@ -643,7 +622,7 @@
       That is completely okay, dear sister. I hold no sadness —
       only gratitude that you took the time to read these words.
       The Lord's timing is always perfect, and I trust that
-      He has something beautiful in store for you this Saturday.
+      He has something beautiful in store for you this day.
       You are seen, valued, and appreciated. 💛
     </div>
     <div class="reason-box">
@@ -656,15 +635,17 @@
 </div>
 
 <script>
-  // ── EmailJS config ──────────────────────────────────────────────
-  // SETUP INSTRUCTIONS:
-  // 1. Go to https://www.emailjs.com and create a free account
-  // 2. Add an Email Service (Gmail recommended) → copy the Service ID
-  // 3. Create an Email Template with these variables:
-  //    {{to_email}}, {{subject}}, {{message}}
-  //    Copy the Template ID
-  // 4. Go to Account → copy your Public Key
-  // 5. Replace the three values below:
+  // ════════════════════════════════════════════════
+  //   ✦  EDIT THESE VALUES TO CUSTOMISE YOUR INVITE
+  // ════════════════════════════════════════════════
+  const CONFIG = {
+    senderName : 'Justine / Astin ✦ From West',   // shown at the bottom of the letter
+    eventDate  : 'Sunday, May 31, 2026',           // shown in the letter body and corner
+    eventName  : 'EKD — Encourage Kingdom Date',  // shown in bold inside the letter
+  };
+  // ════════════════════════════════════════════════
+
+  // ── EmailJS config ──────────────────────────────
   const EMAILJS_PUBLIC_KEY  = 'cdrNUiCrrbESkMUu0';
   const EMAILJS_SERVICE_ID  = 'service_nyr56rc';
   const EMAILJS_TEMPLATE_ID = 'template_rzyxupb';
@@ -672,7 +653,20 @@
 
   emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
 
-  // ── Particles ───────────────────────────────────────────────────
+  // ── Inject CONFIG values into the DOM ───────────
+  document.getElementById('letterDate').textContent = CONFIG.eventDate;
+  document.getElementById('letterSig').textContent  = CONFIG.senderName;
+  document.getElementById('letterInviteLine').innerHTML =
+    `I would be deeply honoured if you would allow me the privilege of accompanying
+    you on <strong style="font-weight:600; color:#5a3810;">${CONFIG.eventName}</strong> —
+    this coming <strong style="font-weight:600; color:#5a3810;">${CONFIG.eventDate}.</strong>`;
+  document.getElementById('yesBody').innerHTML =
+    `Thank you, dear sister, for your willingness and open heart. Your yes is
+    not just a gift to me — it is a reflection of the beautiful spirit God has
+    placed within you. I am truly grateful. May our time together on
+    <em>${CONFIG.eventDate}</em> glorify Him in every moment. See you! 🕊️`;
+
+  // ── Particles ────────────────────────────────────
   const container = document.getElementById('particles');
   for (let i = 0; i < 22; i++) {
     const p = document.createElement('div');
@@ -688,7 +682,7 @@
     container.appendChild(p);
   }
 
-  // ── Envelope open ───────────────────────────────────────────────
+  // ── Envelope open ─────────────────────────────────
   let opened = false;
   function openEnvelope() {
     if (opened) return;
@@ -700,26 +694,14 @@
     document.getElementById('hint').style.animationPlayState = 'paused';
     document.getElementById('hint').style.opacity = '0';
 
-    // Open flap
-    setTimeout(() => {
-      document.getElementById('envFlap').classList.add('open');
-    }, 100);
-
-    // Rise letter peek
-    setTimeout(() => {
-      document.getElementById('letterPeek').classList.add('rise');
-    }, 700);
-
-    // Show full letter
-    setTimeout(() => {
-      document.getElementById('letterScene').classList.add('visible');
-    }, 1400);
+    setTimeout(() => { document.getElementById('envFlap').classList.add('open'); }, 100);
+    setTimeout(() => { document.getElementById('letterPeek').classList.add('rise'); }, 700);
+    setTimeout(() => { document.getElementById('letterScene').classList.add('visible'); }, 1400);
   }
 
-  // ── Response handler ────────────────────────────────────────────
+  // ── Response handler ──────────────────────────────
   function respond(choice) {
     document.getElementById('letterScene').classList.remove('visible');
-
     if (choice === 'yes') {
       setTimeout(() => {
         document.getElementById('yesScene').classList.add('visible');
@@ -733,7 +715,7 @@
     }
   }
 
-  // ── Confetti ────────────────────────────────────────────────────
+  // ── Confetti ──────────────────────────────────────
   function launchConfetti() {
     const colors = ['#f9c74f','#90be6d','#43aa8b','#f8961e','#f94144','#577590'];
     for (let i = 0; i < 80; i++) {
@@ -753,30 +735,28 @@
     }
   }
 
-  // ── Send YES email ───────────────────────────────────────────────
+  // ── Send YES email ────────────────────────────────
   function sendYes() {
     const statusEl = document.getElementById('yesSendStatus');
     statusEl.textContent = 'Sending...';
     statusEl.className = 'send-status';
     emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      to_name:   'Justine',
+      to_name:   CONFIG.senderName,
       from_name: 'EKD Invitation',
       to_email:  YOUR_EMAIL,
       reply_to:  YOUR_EMAIL,
-      subject:   'EKD Invitation - She Said YES!',
-      message:   'Great news Justine! Your sister accepted your EKD invitation for Sunday May 31 2026. She said YES! Praise God - may your time together be glorifying and full of joy.'
-    }).then(function(res) {
-      console.log('EmailJS success:', res);
-      statusEl.textContent = '✓ Email sent to your Gmail!';
+      subject:   `${CONFIG.eventName} Invitation - She Said YES!`,
+      message:   `Great news! Your sister accepted your ${CONFIG.eventName} invitation for ${CONFIG.eventDate}. She said YES! Praise God — may your time together be glorifying and full of joy.`
+    }).then(() => {
+      statusEl.textContent = '✓ Email sent!';
       statusEl.className = 'send-status ok';
-    }, function(err) {
-      console.error('EmailJS failed:', JSON.stringify(err));
+    }, (err) => {
       statusEl.textContent = 'Error: ' + (err.text || JSON.stringify(err));
       statusEl.className = 'send-status err';
     });
   }
 
-  // ── Send NO email ────────────────────────────────────────────────
+  // ── Send NO email ─────────────────────────────────
   function sendNo() {
     const reason   = document.getElementById('reasonInput').value.trim();
     const statusEl = document.getElementById('noSendStatus');
@@ -786,23 +766,21 @@
     btn.textContent = 'Sending…';
 
     const message = reason
-      ? 'Your sister declined the EKD invitation for Saturday May 31 2026. Her reason: ' + reason
-      : 'Your sister declined the EKD invitation for Saturday May 31 2026. She did not leave a reason.';
+      ? `Your sister declined the ${CONFIG.eventName} invitation for ${CONFIG.eventDate}. Her reason: ${reason}`
+      : `Your sister declined the ${CONFIG.eventName} invitation for ${CONFIG.eventDate}. She did not leave a reason.`;
 
     emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      to_name:   'Justine',
+      to_name:   CONFIG.senderName,
       from_name: 'EKD Invitation',
       to_email:  YOUR_EMAIL,
       reply_to:  YOUR_EMAIL,
-      subject:   'EKD Invitation - She Said Not This Time',
+      subject:   `${CONFIG.eventName} Invitation - She Said Not This Time`,
       message:   message
-    }).then(function(res) {
-      console.log('EmailJS success:', res);
-      statusEl.textContent = '✓ Response sent to your Gmail!';
+    }).then(() => {
+      statusEl.textContent = '✓ Response sent!';
       statusEl.className = 'send-status ok';
       btn.textContent = 'Sent ✓';
-    }, function(err) {
-      console.error('EmailJS failed:', JSON.stringify(err));
+    }, (err) => {
       statusEl.textContent = 'Error: ' + (err.text || JSON.stringify(err));
       statusEl.className = 'send-status err';
       btn.disabled = false;
